@@ -1,0 +1,6 @@
+
+mnist/data/train\.csv
+
+mnist/data/test\.csv
+
+mnist/data/sample_submission\.csv
