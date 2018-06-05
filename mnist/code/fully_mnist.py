@@ -1,5 +1,4 @@
 import tflearn as tl
-import tflearn.datasets.mnist as mn
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -143,12 +142,13 @@ class Net(object):
     #     ax.plot(self.x_data, pre, color='gold', linewidth=3)
     #     plt.show()
 
+
 if __name__ == "__main__":
     data = MnistData()
     data.load_data()
-    model = Net(x_data=data.train_img, y_data=data.train_label, epoch=5, learning_rate=0.001, layer_num=5, cell_num=64, activation_type=3)
+    model = Net(x_data=data.train_img, y_data=data.train_label, epoch=6, learning_rate=0.001, layer_num=5, cell_num=64, activation_type=3)
     model.set_validate_set(data.test_img)
     print(np.shape(data.test_img))
     model.build_net()
-    # model.train_model()
+    model.train_model()
     model.test_model()
