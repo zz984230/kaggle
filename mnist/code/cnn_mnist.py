@@ -80,7 +80,7 @@ class Net(object):
         self.model.fit(np.reshape(self.x_data, [-1, 28, 28, 1]), self.y_data, n_epoch=self.epoch, show_metric=True, batch_size=128)
         self.model.save("../model/cnn/cnn_model")
 
-    def set_validate_set(self, v_img):
+    def set_test_set(self, v_img):
         self.v_img = v_img
 
     def test_model(self):
@@ -100,14 +100,32 @@ class Net(object):
         submission_df["Label"] = pre
         submission_df.to_csv("../data/sample_submission.csv", index=False)
 
-    # def __draw(self, pre):
-    #     fig = plt.figure(figsize=(9, 6))
-    #     ax = fig.add_subplot(1, 1, 1)
-    #     plt.xlim((-2, 2))
-    #     plt.ylim((0, 2))
-    #     ax.scatter(self.x_data, self.y_data, s=5)
-    #     ax.plot(self.x_data, pre, color='gold', linewidth=3)
-    #     plt.show()
+    def validate_model(self, val_img, val_label):
+        self.model.load("../model/cnn/cnn_model")
+        batch_size = 5000
+        n = 0
+        l = np.shape(val_img)[0]
+        pre = []
+        while n + batch_size <= l:
+            pre.append([np.argmax(i) for i in
+                        self.model.predict(X=np.reshape(val_img[n: n + batch_size], [-1, 28, 28, 1]))])
+            n += batch_size
+        pre = np.reshape(pre, [-1, 1])
+        pre = np.concatenate((pre, np.reshape(
+            [np.argmax(i) for i in self.model.predict(X=np.reshape(val_img[n:], [-1, 28, 28, 1]))], [-1, 1])))
+
+        pre = np.ravel(pre)
+        label = np.ravel([np.argmax(i) for i in val_label])
+        diff_index = np.ravel(np.argwhere(pre != label))
+        self.__draw(pre, val_img, diff_index)
+
+    def __draw(self, pre, val_img, diff_index):
+        for i in diff_index:
+            plt.figure()
+            plt.title(pre[i])
+            plt.imshow(np.reshape(val_img[i], [28, 28]), cmap='Greys_r')
+            plt.savefig("../check/%s" % i)
+            plt.close()
 
 if __name__ == "__main__":
     data = MnistData()
@@ -115,7 +133,8 @@ if __name__ == "__main__":
     train_img = data.train_img / 255
     test_img = data.test_img / 255
     model = Net(x_data=train_img, y_data=data.train_label, epoch=5, learning_rate=0.001)
-    model.set_validate_set(test_img)
+    model.set_test_set(test_img)
     model.build_net()
     # model.train_model()
-    model.test_model()
+    # model.test_model()
+    model.validate_model(train_img, data.train_label)
