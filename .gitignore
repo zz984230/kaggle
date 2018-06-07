@@ -12,3 +12,13 @@ mnist/model/cnn/cnn_model\.data-00000-of-00001
 mnist/model/cnn/cnn_model\.index
 
 mnist/model/cnn/cnn_model\.meta
+
+\.idea/workspace\.xml
+
+\.idea/vcs\.xml
+
+\.idea/kaggle\.iml
+
+\.idea/misc\.xml
+
+\.idea/modules\.xml

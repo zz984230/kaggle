@@ -1,2 +1,2 @@
-model_checkpoint_path: "D:\\Program Files (x86)\\JetBrains\\PyCharm 2016.3.1\\workspace\\test\\kaggle\\mnist\\model\\fully\\fully_model"
-all_model_checkpoint_paths: "D:\\Program Files (x86)\\JetBrains\\PyCharm 2016.3.1\\workspace\\test\\kaggle\\mnist\\model\\fully\\fully_model"
+model_checkpoint_path: "D:\\projects\\kaggle\\kaggle\\mnist\\model\\fully\\fully_model"
+all_model_checkpoint_paths: "D:\\projects\\kaggle\\kaggle\\mnist\\model\\fully\\fully_model"
