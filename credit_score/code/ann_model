@@ -1,0 +1,59 @@
+import keras as ks
+import numpy as np
+import pandas as pd
+
+
+class ANN(object):
+    def __init__(self, layers=20, units=50, activation='tanh', learning_rate=0.001, epoch=30, batch_size=64, model_save_path="../model/ann.ckpt"):
+        self.__layers = layers
+        self.__units = units
+        self.__activation = activation
+        self.__lr = learning_rate
+        self.__epoch = epoch
+        self.__batch_size = batch_size
+        self.__model_save_path = model_save_path
+        self.__model = None
+
+    def __build_net(self, train_shape):
+        inpt = ks.layers.Input(shape=(train_shape[1],))
+        for i in range(self.__layers):
+            if i == 0:
+                net = ks.layers.Dense(units=self.__units, activation=self.__activation)(inpt)
+                net = ks.layers.BatchNormalization()(net)
+                continue
+            net = ks.layers.BatchNormalization()(net)
+            net = ks.layers.Dense(units=self.__units, activation=self.__activation)(net)
+        net = ks.layers.Dense(units=2, activation='softmax')(net)
+        return inpt, net
+
+    def __block(self, net):
+        net_1 = ks.layers.Dense(units=self.__units)(net)
+        net = ks.layers.add([net, net_1])
+        net = ks.layers.BatchNormalization()(net)
+        return ks.layers.ReLU()(net)
+
+    def __build_resnet(self, train_shape):
+        inpt = ks.layers.Input(shape=(train_shape[1],))
+        net = ks.layers.Dense(units=self.__units, activation=self.__activation)(inpt)
+        for i in range(self.__layers):
+            net = self.__block(net)
+        net = ks.layers.Dense(units=2, activation='softmax')(net)
+        return inpt, net
+
+    def fit(self, train_X, train_y):
+        train_shape = np.shape(train_X)
+        # inpt, net = self.__build_net(train_shape)
+        inpt, net = self.__build_resnet(train_shape)
+
+        self.__model = ks.models.Model(inputs=inpt, outputs=net)
+        self.__model.compile(optimizer=ks.optimizers.RMSprop(lr=self.__lr), loss='categorical_crossentropy', metrics=['accuracy'])
+        self.__model.fit(train_X, pd.get_dummies(train_y), batch_size=self.__batch_size, epochs=self.__epoch)
+        self.__model.save(self.__model_save_path)
+
+    def fit_by_saved_model(self, train_X, train_y):
+        self.__model = ks.models.load_model(self.__model_save_path)
+        self.__model.fit(train_X, pd.get_dummies(train_y), batch_size=self.__batch_size, epochs=10)
+        self.__model.save(self.__model_save_path)
+
+    def predict_proba(self, test_X):
+        return self.__model.predict(x=test_X, batch_size=self.__batch_size, verbose=0)
