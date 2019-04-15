@@ -8,6 +8,8 @@ from imblearn.over_sampling import SMOTE
 from sklearn import feature_selection
 from sklearn import preprocessing
 from sklearn import linear_model
+from sklearn import ensemble
+from xgboost import XGBClassifier, plot_importance
 
 
 class Lazy(object):
@@ -220,12 +222,33 @@ class CreditPreprocessData(object):
     def rfe_selected_train_data(self):
         self.__df_X = feature_selection.RFE(estimator=linear_model.LogisticRegression(solver="lbfgs"), n_features_to_select=9).fit_transform(self.__df_X, self.__df_y)
 
+    def random_forest_selected_data(self):
+        rf = ensemble.RandomForestClassifier(n_estimators=100)
+        selecter = feature_selection.SelectFromModel(rf).fit(self.__df_X, self.__df_y)
+        self.__df_X = selecter.transform(self.__df_X)
+        self.__df_test_X = selecter.transform(self.__df_test_X)
+
+    def xgboost_selected_data(self, is_plot=False):
+        xg = XGBClassifier()
+        selecter = feature_selection.SelectFromModel(xg).fit(self.__df_X, self.__df_y)
+        self.__df_X = selecter.transform(self.__df_X)
+        self.__df_test_X = selecter.transform(self.__df_test_X)
+        if not is_plot:
+            return
+
+        fig, ax = plt.subplots(figsize=(10, 15))
+        xg.fit(self.__df_X, self.__df_y)
+        plot_importance(xg, ax=ax)
+        plt.show()
+
     @property
     def selected_train_feature_label_data(self):
+        print("train_X shape: %s" % str(np.shape(self.__df_X)))
         return self.__df_X, self.__df_y
 
     @property
     def selected_test_feature_data(self):
+        print("test_X shape: %s" % str(np.shape(self.__df_test_X)))
         return self.__df_test_X
 
 
